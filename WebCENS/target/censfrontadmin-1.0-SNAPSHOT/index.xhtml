@@ -1,0 +1,74 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <script type="text/javascript">
+    function handleLoginRequest(xhr, status, args) {
+        
+        
+        if(args.validationFailed || !args.loggedIn) {
+            PF('dlg').jq.effect("shake", {times:5}, 100);
+        }
+        else {
+            PF('dlg').hide();
+            $('#loginLink').fadeOut();
+        }
+    }
+    
+    function handleSubmit(args, dialog) {
+    var jqDialog = jQuery('#' + dialog);
+    if (args.validationFailed) {
+        jqDialog.effect('shake', {times: 3}, 100);
+    } else {
+        PF(dialog).hide();
+    }
+}
+
+    </script>
+    
+    
+    <h:head>
+        <title>Administración Sistema de Encuestas</title>
+        <h:outputStylesheet name="css/jsfcrud.css"/>
+        
+    </h:head>
+    <h:body>
+        
+        <h:form>
+                    
+            <p:panel header="Administracion de Encuestas CENS " >
+                   <center>
+                <p:graphicImage name="/images/login.png" />
+                    <p:messages autoUpdate="true" showDetail="true"/>
+                    <h:panelGrid columns="2">
+                        <p:outputLabel for="txtUsuario" value="Usuario"/>
+                        
+                        <p:inputText id="txtUsuario" value="#{loginController.requestDTO.username}" required="true"/>
+                        
+                        <p:outputLabel for="txtClave" value="Clave"/>
+                        <p:password id="txtClave" value="#{loginController.requestDTO.password}" required="false"/>
+                          <p:growl id="growl"/>
+                        
+                          <p:commandButton value="Entrar"  action="#{loginController.loginRequest}"/>
+                         
+                          <center>
+                          <p:commandButton value="Resetear Clave"  action="#{loginController.resetRequest}"/>
+                          </center>
+                    </h:panelGrid>
+                            </center>
+            </p:panel> 
+        </h:form>
+    </h:body>
+
+
+
+
+
+
+
+
+</html>
+

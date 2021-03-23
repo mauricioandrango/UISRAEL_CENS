@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+    <h:body>
+        <script type="text/javascript">
+            function mostrarEstadisticas(idEncuesta) {
+                console.log("Encuesta::" + idEncuesta)
+                alert("Encuesta:" + idEncuesta);
+            }
+        </script>
+        <ui:composition template="/template.xhtml">
+
+
+            <ui:define name="title">
+                <h:outputText value="Encuestas Cens"></h:outputText>
+            </ui:define>
+            <ui:define name="windowTitle">
+                #{msgs.planetariumTitle}
+            </ui:define> 
+
+            <ui:define name="content">
+
+
+                <div id="divEstadisticaEncuesta" style="display: none; padding-left: 20px; border: 2px solid #3a87ad;
+                     border-radius: 5px;">
+
+                </div>
+                <div id="divChartEstadisticaEncuesta" style="display: none; padding-left: 20px; border: 2px solid #3a87ad;
+                     border-radius: 5px;"></div>
+                <div id="divListaChartEstadisticas">
+                </div>
+                <ul id="ct"></ul>
+
+
+                <h:form id="EncuestaDTOListForm">
+                    <p:panel header="Lista Encuestas">
+                        <h:panelGrid columns="1">
+                            <f:facet name="footer">
+                                <p:commandButton id="createButton" icon="ui-icon-plus"   value="Crear" actionListener="#{encuestaDTOController.prepareCreate}" update=":EncuestaDTOCreateForm" oncomplete="PF('EncuestaDTOCreateDialog').show()"/>
+                                <p:commandButton id="viewButton"   icon="ui-icon-search" value="Visualizar" update=":EncuestaDTOViewForm" oncomplete="PF('EncuestaDTOViewDialog').show()" disabled="#{empty encuestaDTOController.selected}"/>
+                                <p:commandButton id="editButton"   icon="ui-icon-pencil" value="Editar" update=":EncuestaDTOEditForm" oncomplete="PF('EncuestaDTOEditDialog').show()" disabled="#{empty encuestaDTOController.selected}"/>
+                                <p:commandButton id="deleteButton" icon="ui-icon-trash"  value="Borrar" actionListener="#{encuestaDTOController.destroy}" update=":growl,datalist" disabled="#{empty encuestaDTOController.selected}"/>
+                            </f:facet>
+                        </h:panelGrid>
+                        <h:panelGrid style="border: 0px;" id="pgClientes" >
+                            <p:dataTable id="datalist" value="#{encuestaDTOController.items}" var="item"
+                                         selectionMode="single" selection="#{encuestaDTOController.selected}"
+                                         paginator="true"
+                                         paginatorPosition="bottom"
+                                         rowKey="#{item.id}"
+                                         rows="50"
+                                         scrollable="true"
+                                         scrollRows="30"
+                                         scrollHeight="500"
+                                         >
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="Codigo Encuesta"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.id}"/>
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="#{bundle.ListEncuestaDTOTitle_nombre}"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.nombre}"/>
+                                </p:column>
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="#{bundle.ListEncuestaDTOTitle_descripcion}"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.descripcion}"/>
+                                </p:column>
+
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="Fecha Inicio"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.fechaInicio}"/>
+                                </p:column>
+
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="Fecha Fin"/>
+                                    </f:facet>
+                                    <h:outputText value="#{item.fechaFin}"/>
+                                </p:column>
+
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputText value="Detalle Encuestas"/>
+                                    </f:facet>
+                                    <center>
+                                        <p:commandButton  type="button1" id="myBtn1" icon="fa fa-list-alt" onclick="verEstadistica('#{item.id}', '#{item.nombre}'); return false"></p:commandButton>
+                                       <!--<p:button type="button1" id="myBtn1"  onclick="verEstadistica('#{item.id}', '#{item.nombre}'); return false">Ver Detalle</p:button> -->
+                                      <!-- <button type="button2" id="myBtn1"  onclick="verEstadisticasChart('#{item.id}', '#{item.nombre}'); return false">Estadísticas</button> -->
+                                        <p:commandButton type="button2" id="myBtn2" icon="fa fa-bar-chart-o"  onclick="verEstadisticasChart('#{item.id}', '#{item.nombre}'); return false"></p:commandButton >
+                                    </center>
+
+                                </p:column>
+                                <!-- columna pregunta en lista -->
+
+                            </p:dataTable>
+                        </h:panelGrid>
+                    </p:panel>
+                </h:form>
+
+
+
+
+
+                <script>
+                    function myFunction() {
+                        var x = document.getElementById("myBtn");
+                        x.disabled = true;
+                    }
+                    function verEstadistica(idEncuesta, nombreEncuesta) {
+                        //document.getElementById("myChart").height = 0;
+                        //document.getElementById("myChart").style = "";
+                        //alert("hola:"+ idEncuesta)
+                        document.getElementById("divEstadisticaEncuesta").style.display = "block";
+                        //http://localhost:80/obteneEstadisticaEncuesta/1801
+                        console.log("Get data----------");
+                        fetch('http://localhost:80/obteneEstadisticaEncuesta/' + idEncuesta)
+                                .then(response => response.json())
+                                .then(function (response) {
+                                    renderEstadisticas(response, nombreEncuesta)
+                                });
+
+
+                    }
+
+                    function renderEstadisticas(jsonEstadisticas, nombreEncuesta) {
+                        console.log(jsonEstadisticas);
+
+                        var arrayEstadisticasXEncuesta = jsonEstadisticas.data;
+                        var arrayLength = arrayEstadisticasXEncuesta.length;
+                        // const array = ["one", "two", "three"]
+                        var currentDiv = document.getElementById("divEstadisticaEncuesta");
+                        currentDiv.innerHTML = "";
+                        //limpiar el otro div
+                        document.getElementById("divListaChartEstadisticas").innerHTML = "";
+                        var newDiv = document.createElement("h1");
+                        var newContent = document.createTextNode("Nombre Encuesta: " + nombreEncuesta);
+                        newDiv.appendChild(newContent); //añade texto al div creado.
+                        currentDiv.appendChild(newDiv);
+
+                        arrayEstadisticasXEncuesta.forEach(function (item, index) {
+                            console.log(item, index);
+                            // Add pregunta / estadistica
+                            var newDiv = document.createElement("h4");
+                            //var newContent = document.createTextNode((index+1)+") "+item.pregunta+": "+item.numeroRespuestas);
+                            var newContent = document.createTextNode((index + 1) + ") " + item.pregunta);
+                            newDiv.appendChild(newContent); //añade texto al div creado.
+                            currentDiv.appendChild(newDiv);
+                        });
+
+                    }
+
+                //Graficar Encuesta con Chart JS
+
+                    function verEstadisticasChart(idEncuesta, nombreEncuesta) {
+                        //alert("hola:"+ idEncuesta)
+                        document.getElementById("divEstadisticaEncuesta").style.display = "block";
+                        //http://localhost:80/obteneEstadisticaEncuesta/1801
+                        console.log("Get data----------");
+                        fetch('http://localhost:80/obteneEstadisticaEncuesta/' + idEncuesta)
+                                .then(response => response.json())
+                                .then(function (response) {
+                                    renderChartEstadisticas(response, nombreEncuesta)
+                                });
+
+
+                    }
+                    function renderChartEstadisticas(jsonEstadisticas, nombreEncuesta) {
+                        console.log(jsonEstadisticas);
+
+                        var arrayEstadisticasXEncuesta = jsonEstadisticas.data;
+                        var arrayLength = arrayEstadisticasXEncuesta.length;
+                        // const array = ["one", "two", "three"]
+                        var currentDiv = document.getElementById("divListaChartEstadisticas");
+                        currentDiv.innerHTML = "";
+                        document.getElementById("divEstadisticaEncuesta").innerHTML = "";
+                        var newDiv = document.createElement("h1");
+                        var newContent = document.createTextNode("Nombre Encuesta: " + nombreEncuesta);
+                        newDiv.appendChild(newContent); //añade texto al div creado.
+                        currentDiv.appendChild(newDiv);
+
+                        // preguntas y valores
+                        var preguntas = [];
+                        var valores = [];
+                        var numeroPreguntas = 0;
+                        
+                        //Agregar primer div de encuestas
+                        numeroPreguntas = numeroPreguntas + 1;
+                        var nombreCanvasPrincipalChart = "myChart" + numeroPreguntas;
+                        var innerDiv = document.createElement('canvas');
+                        innerDiv.id = nombreCanvasPrincipalChart;
+                        //  innerDiv.width = 800;
+                        //innerDiv.height = 450;
+                        var tituloPregunta = document.createElement('h2');
+                        tituloPregunta.innerHTML = "Datos Encuesta";
+                        document.getElementById("divListaChartEstadisticas").appendChild(tituloPregunta);
+                        document.getElementById("divListaChartEstadisticas").appendChild(innerDiv);
+                        document.getElementById(nombreCanvasPrincipalChart).style = "width: 600px; height: 400px;";
+                       
+
+                        
+
+                        arrayEstadisticasXEncuesta.forEach(function (item, index) {
+                            console.log(item, index);
+                            // Add pregunta / estadistica
+                            // poblar array preguntas y valores
+                            preguntas.push(item.pregunta);
+                            valores.push(item.numeroRespuestas);
+                            //graficar preginta
+                            var preguntaOpcion = [];
+                            var valoresOpcion = [];
+
+                            if (item.respuestasXNumero == null || item.respuestasXNumero == undefined) {
+                                console.log("No existen respuestas para preguntas con opciones");
+                            } else {//recorrer las preguntas con cada una de sus opciones
+
+                                for (var key in item.respuestasXNumero) {
+                                    if (item.respuestasXNumero.hasOwnProperty(key)) {
+                                        console.log(key + " -> " + item.respuestasXNumero[key]);
+                                        preguntaOpcion.push(key);
+                                        valoresOpcion.push(item.respuestasXNumero[key]);
+
+                                    }
+                                }
+
+                                //pobar datos para graficar
+                                var data = {
+                                    labels: preguntaOpcion,
+                                    datasets: [
+                                        {
+                                            label: item.pregunta,
+                                            fillColor: "rgba(151,187,205,0.5)",
+
+                                            /*strokeColor: "rgba(151,187,205,0.8)",
+                                             highlightFill: "rgba(151,187,205,0.75)",
+                                             highlightStroke: "rgba(151,187,205,1)",*/
+                                            data: valoresOpcion
+                                        }
+                                    ],
+                                };
+                                // SI existen preguntas cambiar el tamaño del div para el chart
+                                numeroPreguntas = numeroPreguntas + 1;
+                                var nombreCanvasChart = "myChart" + numeroPreguntas;
+                                var innerDiv = document.createElement('canvas');
+                                innerDiv.id = nombreCanvasChart;
+                                //  innerDiv.width = 800;
+                                //innerDiv.height = 450;
+                                 var tituloPregunta = document.createElement('h2');
+                                 tituloPregunta.innerHTML = item.pregunta;
+                                document.getElementById("divListaChartEstadisticas").appendChild(tituloPregunta);
+
+                                document.getElementById("divListaChartEstadisticas").appendChild(innerDiv);
+                                document.getElementById(nombreCanvasChart).style = "width: 600px; height: 400px;";
+
+
+                                var ctx = document.getElementById(nombreCanvasChart).getContext("2d");
+
+
+                                var myBarChart = new Chart(ctx).Bar(data);
+
+
+                            }
+
+
+                // Bar chart
+
+
+                        });
+
+
+                        //Agregar grafico principal con todas ls preguntas
+                        var data = {
+                            labels: preguntas,
+                            datasets: [
+                                {
+                                    label: "Encuesta",
+                                    fillColor: "rgba(151,187,205,0.5)",
+
+                                    strokeColor: "rgba(151,187,205,0.8)",
+                                    highlightFill: "rgba(151,187,205,0.75)",
+                                    highlightStroke: "rgba(151,187,205,1)",
+                                    data: valores
+                                }
+                            ],
+                        };
+
+                        var ctx = document.getElementById(nombreCanvasPrincipalChart).getContext("2d");
+                        
+                        var myBarChart = new Chart(ctx).Bar(data);
+
+                    }
+
+
+
+
+                </script>
+                <script src="../resources/js/chart.min.js" />
+
+                <ui:include src="Create.xhtml"/>
+                <ui:include src="Edit.xhtml"/>
+                <ui:include src="View.xhtml"/>
+            </ui:define>
+            <script src="../resources/js/jsfcrud.js" />
+        </ui:composition>
+    </h:body>
+</html>
